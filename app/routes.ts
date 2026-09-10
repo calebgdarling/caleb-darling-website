@@ -12,6 +12,5 @@ export default [
     route("about", "./pages/about.tsx"),
     route("case-studies", "./pages/case-studies.tsx"),
     route("contact", "./pages/contact.tsx"),
-    route("secretPage", "./pages/secret-page.tsx"),
   ]),
 ] satisfies RouteConfig;
