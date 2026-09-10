@@ -1,4 +1,4 @@
-import type { Route } from "./+types";
+import type { Route } from "./+types/home";
 
 export default function Home({
   loaderData,
@@ -11,6 +11,7 @@ export default function Home({
       <meta property="title" content="Caleb Darlings Website" />
       <meta name="description" content="A personal website for Caleb Darling" />
       <title>Caleb Darling | Home </title>
+
       <WelcomeBanner />
 
       <div>
