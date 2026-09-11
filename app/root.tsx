@@ -1,8 +1,8 @@
 import {
   isRouteErrorResponse,
   Links,
-  Meta,
   Outlet,
+  Link as RouterLink,
   Scripts,
   ScrollRestoration,
 } from "react-router";
@@ -10,7 +10,18 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import "@radix-ui/themes/styles.css";
-import { Theme } from "@radix-ui/themes";
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  Link,
+  Section,
+  Text,
+  Theme,
+} from "@radix-ui/themes";
+import { Avatar } from "./primoridals/avatar";
+import { site } from "./content/site";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,16 +34,13 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
-  {
-    rel: "icon",
-    href: "/favicon-light.svg",
-    media: "(prefers-color-scheme: light)",
-  },
-  {
-    rel: "icon",
-    href: "/favicon.ico",
-    media: "(prefers-color-scheme: dark)",
-  },
+  /*
+   * No `media` attribute here on purpose. The previous pair of icon links
+   * were gated on prefers-color-scheme, which browsers apply inconsistently
+   * to favicons — the reliable way to do a theme-aware icon is one SVG with
+   * the media query inside it.
+   */
+  { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -41,7 +49,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
         <Links />
       </head>
       <body>
@@ -60,30 +67,60 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  const notFound = isRouteErrorResponse(error) && error.status === 404;
+
+  let heading = "Something broke";
+  let line = "An unexpected error occurred.";
   let stack: string | undefined;
 
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
+  if (notFound) {
+    heading = "404";
+    line = "Huh. This route doesn't exist.";
+  } else if (isRouteErrorResponse(error)) {
+    line = error.statusText || line;
+  } else if (import.meta.env.DEV && error instanceof Error) {
+    line = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <Container size="2" px="4">
+      <Section size="3">
+        <Flex align="center" gap="6" wrap="wrap" asChild>
+          <main>
+            {notFound ? (
+              <Avatar
+                image={site.avatars.confused}
+                alt="Cartoon illustration of me shrugging, confused"
+                width={300}
+              />
+            ) : null}
+            <Flex
+              direction="column"
+              gap="3"
+              align="start"
+              style={{ minWidth: "16rem", flex: 1 }}
+            >
+              <Heading as="h1" size="7">
+                {heading}
+              </Heading>
+              <Text as="p" size="3">
+                {line}
+              </Text>
+              <Link asChild size="3">
+                <RouterLink to="/">Back home</RouterLink>
+              </Link>
+            </Flex>
+          </main>
+        </Flex>
+        {stack ? (
+          <Box className="code-scroll" mt="6" p="4">
+            <pre>
+              <code>{stack}</code>
+            </pre>
+          </Box>
+        ) : null}
+      </Section>
+    </Container>
   );
 }
